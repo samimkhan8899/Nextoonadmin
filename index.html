@@ -3,185 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NexToon | Google Auth Admin Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>NexToon | Premium Anime & Cartoons</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
     <style>
         :root {
-            --primary: #6e8efb;
-            --secondary: #a777e3;
-            --danger: #ef4444;
-            --success: #10b981;
-            --dark: #1e293b;
-            --light: #f1f5f9;
+            --primary-accent: linear-gradient(135deg, #6e8efb, #a777e3);
+            --dark-bg: #1a1c2c;
+            --card-border: #e2e8f0;
+            --text-heading: #1e293b;
             --gray: #64748b;
+            --new-badge: #ff4757;
+            --ongoing: #2ed573;
+            --finished: #ffa502;
+            --toon-red: #d63031; /* UI theke neya red color */
         }
-        
-        body { font-family: 'Poppins', sans-serif; background: var(--light); margin: 0; padding: 20px; color: var(--dark); }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .logout-btn { background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        
-        .tab-container { display: flex; background: white; border-radius: 12px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; }
-        .tab.active { border-bottom: 3px solid var(--primary); color: var(--primary); background: rgba(110, 142, 251, 0.05); }
-        
-        .content-section { display: none; }
-        .content-section.active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .admin-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--gray); }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; outline: none; transition: 0.3s; }
-        
-        .btn-post { padding: 14px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
-        .btn-post:hover { opacity: 0.9; transform: translateY(-2px); }
-        
-        .episode-row { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; position: relative; }
-        .ep-link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .remove-btn { position: absolute; top: 10px; right: 10px; background: #fee2e2; color: #ef4444; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; }
 
-        .add-ep-btn { background: var(--dark); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background-color: #f8fafc; color: #334155; }
+
+        header {
+            background: var(--dark-bg); padding: 15px 20px; display: flex;
+            justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000;
+        }
+        .logo { font-weight: 700; font-size: 22px; background: var(--primary-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; letter-spacing: 1px; }
+        .icon-btn { color: white; font-size: 20px; cursor: pointer; }
+
+        #search-container {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark-bg); align-items: center; padding: 0 20px; box-sizing: border-box;
+        }
+        #search-input { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; padding: 10px; }
+
+        #side-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: var(--dark-bg); transition: 0.4s; z-index: 2000; padding: 20px 10px; border-radius: 0 20px 20px 0; }
+        #side-menu.active { left: 0; }
+        .menu-item { padding: 12px 20px; color: #cbd5e1; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 5px; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 1500; }
+
+        .feed { padding: 20px; max-width: 900px; margin: auto; }
+        .post-card { background: white; border-radius: 16px; overflow: hidden; margin-bottom: 25px; border: 1px solid var(--card-border); cursor: pointer; transition: 0.3s; position: relative; }
+        .post-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .post-thumb { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: #eee; }
+        .post-content { padding: 20px; text-align: left; } 
+        .badge-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
         
-        .content-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .content-card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; transition: 0.3s; }
-        .content-poster { height: 180px; width: 100%; object-fit: cover; }
-        .content-info { padding: 15px; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; width: 100%; max-width: 800px; border-radius: 15px; padding: 25px; max-height: 90vh; overflow-y: auto; position: relative; }
-        
-        #status, #editStatus { margin-top: 15px; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; }
-        .success-msg { background: #dcfce7; color: var(--success); border: 1px solid var(--success); }
-        .filter-section { background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border: 1px solid #cbd5e1; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; color: white; }
+        .quality-badge { background: #f1f5f9; color: #64748b; }
+        .new-badge { background: var(--new-badge); }
+        .status-badge.ongoing { background: var(--ongoing); }
+        .status-badge.finished { background: var(--finished); }
+
+        .post-title { margin: 0 0 12px 0; font-size: 19px; line-height: 1.4; color: var(--text-heading); font-weight: 600; text-align: left; }
+        .post-meta { display: flex; gap: 20px; font-size: 13px; color: #94a3b8; justify-content: flex-start; }
+        .post-meta i { color: #6e8efb; margin-right: 5px; }
+
+        /* --- New Pagination & Latest Uploads Styles --- */
+        .pagination-container { display: flex; justify-content: center; align-items: center; gap: 5px; margin: 30px 0; flex-wrap: wrap; }
+        .page-btn { padding: 8px 12px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; font-weight: 600; color: #333; font-size: 14px; }
+        .page-btn.active { background: var(--toon-red); color: white; border-color: var(--toon-red); }
+        .page-btn.nav-btn { background: var(--toon-red); color: white; border: none; padding: 8px 18px; }
+        .page-btn:disabled { background: #eee; color: #999; cursor: not-allowed; }
+
+        .latest-uploads-container { background: white; border: 1px solid #eee; border-radius: 8px; margin-top: 10px; overflow: hidden; }
+        .latest-header-bar { background: #222; color: white; padding: 12px 15px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .latest-item { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; font-size: 14px; color: #d63031; cursor: pointer; font-weight: 500; transition: 0.2s; display: block; text-decoration: none; }
+        .latest-item:hover { background: #fdf2f2; }
+        .latest-item:last-child { border-bottom: none; }
+
+        /* --- Telegram Section Styles --- */
+        .section-title-bar { background: #333; color: white; padding: 10px 15px; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-top: 25px; border-radius: 4px 4px 0 0; display: inline-block; }
+        .telegram-box { background: white; border: 1px solid #eee; padding: 15px; border-radius: 0 4px 4px 4px; text-align: center; }
+        .telegram-box img { max-width: 100%; height: auto; border-radius: 8px; cursor: pointer; }
+
+        /* --- New Telegram Alert Animation --- */
+        .telegram-alert {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: #242939; color: white; padding: 12px 20px; border-radius: 12px;
+            display: flex; align-items: center; gap: 15px; z-index: 3000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 90%; max-width: 400px;
+            transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .telegram-alert.show { bottom: 20px; }
+        .tg-icon { font-size: 24px; color: #0088cc; }
+        .tg-text { flex-grow: 1; font-size: 13px; line-height: 1.4; }
+        .tg-btn { 
+            background: #0088cc; color: white; border: none; padding: 6px 15px; 
+            border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;
+            text-decoration: none;
+        }
+        .tg-close { cursor: pointer; font-size: 18px; opacity: 0.6; }
+
+        /* --- Copyright Footer Styles --- */
+        footer { background: #1a1c2c; color: #94a3b8; padding: 30px 20px; text-align: center; margin-top: 50px; border-top: 3px solid var(--toon-red); }
+        .footer-copy { font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+        .footer-link { color: #6e8efb; text-decoration: none; font-weight: 700; text-transform: uppercase; }
+
+        /* --- Details Page --- */
+        #post-details { display: none; background: white; min-height: 100vh; }
+        .main-container { max-width: 650px; margin: auto; padding: 15px; }
+        .title-detail { font-size: 22px; font-weight: 600; color: #333; margin: 15px 0; padding-bottom: 10px; text-align: left; border-bottom: 2px solid #f1f2f6; }
+        #det-img { width: 100%; height: auto; border-radius: 12px; display: block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .info-section { border: 1px solid #eee; padding: 20px; border-radius: 8px; margin: 20px 0; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .info-item { display: flex; margin-bottom: 8px; font-size: 15px; }
+        .info-label { color: #e74c3c; font-weight: 700; width: 100px; flex-shrink: 0; }
+        .info-value { color: #576574; font-weight: 500; }
+        .center-text { text-align: center; font-weight: 800; color: #d63031; margin: 30px 0 20px 0; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .season-wrapper { display: flex; overflow-x: auto; gap: 10px; padding: 10px 5px; margin-bottom: 20px; scrollbar-width: none; }
+        .season-wrapper::-webkit-scrollbar { display: none; }
+        .season-tab { padding: 10px 20px; background: #f1f5f9; border-radius: 30px; white-space: nowrap; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
+        .season-tab.active { background: var(--primary-accent); color: white; border-color: transparent; box-shadow: 0 4px 10px rgba(110, 142, 251, 0.3); }
+        .ep-accordion { border: 1px solid #eef2f7; border-radius: 4px; margin-bottom: 8px; }
+        .ep-header { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: #2d3436; font-weight: 500; }
+        .ep-content { display: none; padding: 20px; background: #fdfdfd; text-align: center; border-top: 1px solid #f1f1f1; }
+        .ep-content.active { display: block; }
+        .res-container { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .dl-res-btn { width: 90%; max-width: 300px; color: white; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 14px; transition: 0.3s; }
+        .btn-480p { background: #3498db; }
+        .btn-720p { background: #2ecc71; }
+        .btn-1080p { background: #e67e22; }
+        .btn-2k { background: #8e44ad; }
+        .btn-4k { background: #c0392b; }
+        .dl-res-btn:hover { opacity: 0.85; transform: scale(1.02); }
+        .more-episodes-msg { text-align: center; padding: 40px 10px; color: #576574; font-weight: 700; font-size: 15px; letter-spacing: 0.5px; line-height: 1.6; }
+        .how-to-download { border-top: 1px solid #f1f1f1; padding: 25px 15px; text-align: center; font-size: 13px; color: #2d3436; font-weight: 600; line-height: 1.5; }
+        .how-to-download span { color: #ff4757; cursor: pointer; text-decoration: underline; }
+        .rec-title { font-size: 18px; font-weight: 700; color: var(--text-heading); margin: 30px 0 15px 0; border-left: 4px solid #6e8efb; padding-left: 10px; }
+        #loading-state { text-align: center; padding: 100px 20px; color: var(--gray); font-weight: 600; }
+        .back-btn { background: #f1f2f6; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 10px; font-weight: 600; color: #576574; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="login-box" class="admin-card" style="max-width: 400px; margin: 100px auto; text-align: center;">
-        <h2 style="margin-bottom: 10px;"><i class="fas fa-user-shield"></i> NexToon Admin</h2>
-        <p style="color: var(--gray); margin-bottom: 25px;">Please login with your Google account to access the dashboard.</p>
-        <button class="btn-post" onclick="handleGoogleLogin()">
-            <i class="fab fa-google"></i> Login with Google
-        </button>
+<div id="overlay" onclick="toggleMenu()"></div>
+
+<div id="tg-alert" class="telegram-alert">
+    <div class="tg-icon"><i class="fab fa-telegram"></i></div>
+    <div class="tg-text">
+        <b>NexToon Community</b><br>
+        Join our telegram channel for latest updates.
     </div>
+    <a href="https://t.me/your_telegram_channel" id="tg-alert-btn" target="_blank" class="tg-btn">JOIN</a>
+    <div class="tg-close" onclick="closeTgAlert()">&times;</div>
+</div>
 
-    <div id="main-ui" style="display: none;">
-        <div class="header">
-            <div>
-                <h1><i class="fas fa-rocket"></i> NexToon Admin</h1>
-                <small id="adminEmail" style="color: var(--primary); font-weight: 600;"></small>
+<header>
+    <div class="icon-btn" onclick="toggleMenu()"><i class="fas fa-align-left"></i></div>
+    <div class="logo" onclick="showHome()">NEXTOON</div>
+    <div class="icon-btn" onclick="toggleSearch()"><i class="fas fa-search"></i></div>
+    <div id="search-container">
+        <i class="fas fa-arrow-left icon-btn" onclick="toggleSearch()" style="margin-right: 15px;"></i>
+        <input type="text" id="search-input" placeholder="Search anime or cartoons..." onkeyup="filterPosts()">
+    </div>
+</header>
+
+<nav id="side-menu">
+    <div class="menu-item" onclick="showHome()"><i class="fas fa-home"></i> Home</div>
+    <div class="menu-item">Movie Library <i class="fas fa-chevron-right" style="font-size: 10px;"></i></div>
+    <div class="menu-item">Animated Series <i class="fas fa-chevron-right" style="font-size: 10px;"></i></div>
+</nav>
+
+<div id="home-page">
+    <div id="loading-state"><i class="fas fa-circle-notch fa-spin fa-2x"></i><br><br>Loading NexToon...</div>
+    <div class="feed">
+        <div id="post-feed"></div>
+        
+        <div id="pagination" class="pagination-container"></div>
+
+        <div class="latest-uploads-container">
+            <div class="latest-header-bar">
+                <i class="fas fa-bolt"></i> Latest Uploads
             </div>
-            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <div id="latest-list"></div>
         </div>
 
-        <div class="tab-container">
-            <div class="tab active" onclick="switchTab('add-content', this)">Add Content</div>
-            <div class="tab" onclick="switchTab('manage-content', this)">Manage Content</div>
+        <div class="section-title-bar">JOIN US ON TELEGRAM</div>
+        <div class="telegram-box">
+            <a href="https://t.me/your_telegram_channel" id="tg-banner-link" target="_blank">
+                <img src="https://i.ibb.co/VWV3p6C/telegram-banner.png" id="tg-banner-img" alt="Join our Telegram Channel">
+            </a>
         </div>
-        
-        <div id="add-content" class="content-section active">
-            <div class="admin-card">
-                <h3>Create New Post</h3>
-                <div class="form-grid">
-                    <div class="form-group"><label>Title *</label><input type="text" id="title" placeholder="Series Name"></div>
-                    <div class="form-group"><label>Poster URL *</label><input type="text" id="image" placeholder="https://image-link.com"></div>
-                    <div class="form-group"><label>Download Guide Link</label><input type="text" id="downloadGuide" placeholder="How to download video link"></div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select id="statusSelect">
-                            <option value="Ongoing">Ongoing</option>
-                            <option value="Finished">Finished</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Display Quality (Card Text)</label>
-                        <select id="quality">
-                            <option>Multi Quality</option>
-                            <option>4K | Ultra HD</option>
-                            <option>1080p | 10Bit</option>
-                            <option>720p | HD</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Languages</label><input type="text" id="lang" placeholder="Hindi, English"></div>
-                    <div class="form-group"><label>Genres</label><input type="text" id="genre" placeholder="Action, Adventure"></div>
-                </div>
-                <button class="btn-post" onclick="uploadToFirebase()">Publish Post</button>
-                <div id="status"></div>
-            </div>
-        </div>
-        
-        <div id="manage-content" class="content-section">
-            <div class="admin-card">
-                <input type="text" id="searchBox" placeholder="Search by title..." onkeyup="loadAllContent()">
-                <div id="contentContainer" class="content-list" style="margin-top:20px;"></div>
-            </div>
-        </div>
+
+        <footer>
+            <div class="footer-copy">Copyright © 2012-2026. All Rights Reserved by</div>
+            <a href="#" class="footer-link" onclick="showHome()">NEXTOON</a>
+        </footer>
     </div>
 </div>
 
-<div class="modal" id="editModal">
-    <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>Edit Post & Episodes</h3>
-            <span style="cursor:pointer; font-size:28px;" onclick="closeEditModal()">&times;</span>
-        </div>
-        <hr>
-        <input type="hidden" id="editId">
-        <div class="form-grid">
-            <div class="form-group"><label>Title</label><input type="text" id="editTitle"></div>
-            <div class="form-group"><label>Status</label>
-                <select id="editStatusSelect">
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Finished">Finished</option>
-                </select>
-            </div>
-            <div class="form-group"><label>Poster URL</label><input type="text" id="editImage"></div>
-            <div class="form-group"><label>Guide Link</label><input type="text" id="editDownloadGuide"></div>
-            <div class="form-group"><label>Quality</label><input type="text" id="editQuality"></div>
-            <div class="form-group"><label>Languages</label><input type="text" id="editLang"></div>
-            <div class="form-group"><label>Genres</label><input type="text" id="editGenre"></div>
-        </div>
-
-        <h3 style="margin-top:25px;">Episode Links</h3>
-        <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 8px;">
-            <label style="margin:0;">Add New:</label>
-            <select id="newEpType" style="width: auto;">
-                <option value="multi">Full Multi (480p-4K)</option>
-                <option value="4k">4K Only</option>
-                <option value="1080p">1080p Only</option>
-                <option value="720p">720p Only</option>
-                <option value="480p">480p Only</option>
-            </select>
-            <button class="add-ep-btn" onclick="triggerAddEp()"><i class="fas fa-plus"></i> Add Episode</button>
-        </div>
-
-        <div class="filter-section">
-            <label style="margin:0; min-width:max-content;"><i class="fas fa-filter"></i> Filter by Season:</label>
-            <select id="seasonFilter" onchange="applySeasonFilter()">
-                <option value="all">Show All Seasons</option>
-            </select>
+<div id="post-details">
+    <div class="main-container">
+        <button class="back-btn" onclick="showHome()"><i class="fas fa-arrow-left"></i> Back</button>
+        <h1 class="title-detail" id="det-title"></h1>
+        <div style="text-align: center;"><img id="det-img" src="" alt="Full Poster"></div>
+        <div class="info-section">
+            <div class="info-item"><span class="info-label">Genre:</span> <span class="info-value" id="det-genre"></span></div>
+            <div class="info-item"><span class="info-label">Language:</span> <span class="info-value" id="det-lang"></span></div>
+            <div class="info-item"><span class="info-label">Quality:</span> <span class="info-value" id="det-quality"></span></div>
+            <div class="info-item"><span class="info-label">Status:</span> <span class="info-value" id="det-status"></span></div>
+            <div class="info-item"><span class="info-label">Encoder:</span> <span class="info-value" id="det-encoder">NexToon</span></div>
         </div>
         
-        <div id="episodes-list"></div>
+        <div class="center-text">⚡ SELECT SEASON ⚡</div>
+        <div class="season-wrapper" id="season-tabs"></div>
+
+        <div class="center-text">⚡ DOWNLOAD / WATCH LINKS ⚡</div>
+        <div id="ep-list-container"></div>
         
-        <div style="display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 0; background: white; padding: 10px 0;">
-            <button class="btn-post" style="flex: 2;" onclick="updateContent()">Update Everything</button>
-            <button class="btn-post" style="background: var(--danger); flex: 1;" onclick="deleteContentConfirm()">Delete Post</button>
-        </div>
-        <div id="editStatus"></div>
+        <div id="ongoing-msg" class="more-episodes-msg">MORE EPISODES WILL BE ADDED<br>AFTER RELEASE...</div>
+        <div class="how-to-download">HOW TO DOWNLOAD MOVIES AND SERIES FROM<br>HERE? <span id="guide-btn">CLICK HERE</span></div>
+        
+        <div class="rec-title">Recommended For You</div>
+        <div id="recommended-feed" style="padding-bottom: 30px;"></div>
     </div>
 </div>
 
@@ -197,627 +233,291 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const auth = firebase.auth();
+    let allPosts = [];
+    let currentEpisodes = [];
+    
+    // Pagination Variables
+    let currentPage = 1;
+    const postsPerPage = 10;
 
-    // EDIT THIS: Add your admin gmail here
-    const authorizedEmails = ["your-email@gmail.com"]; 
-
-    // Login function
-    function handleGoogleLogin() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                const user = result.user;
-                if(authorizedEmails.includes(user.email)) {
-                    showDashboard(user);
-                } else {
-                    alert("Unauthorized! You are not an admin.");
-                    auth.signOut();
-                }
-            }).catch(e => alert(e.message));
+    function toggleMenu() {
+        const menu = document.getElementById('side-menu');
+        const overlay = document.getElementById('overlay');
+        menu.classList.toggle('active');
+        overlay.style.display = menu.classList.contains('active') ? 'block' : 'none';
     }
 
-    // Check existing session
-    auth.onAuthStateChanged((user) => {
-        if (user && authorizedEmails.includes(user.email)) {
-            showDashboard(user);
+    function toggleSearch() {
+        const searchContainer = document.getElementById('search-container');
+        if (searchContainer.style.display === 'flex') {
+            searchContainer.style.display = 'none';
+            document.getElementById('search-input').value = '';
+            currentPage = 1;
+            renderPosts(allPosts);
         } else {
-            document.getElementById('login-box').style.display = 'block';
-            document.getElementById('main-ui').style.display = 'none';
+            searchContainer.style.display = 'flex';
+            document.getElementById('search-input').focus();
         }
-    });
-
-    function showDashboard(user) {
-        document.getElementById('login-box').style.display = 'none';
-        document.getElementById('main-ui').style.display = 'block';
-        document.getElementById('adminEmail').innerText = "Logged in as: " + user.email;
-        loadAllContent();
     }
 
-    function logout() { auth.signOut().then(() => location.reload()); }
-
-    function switchTab(tabId, el) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
+    function filterPosts() {
+        const keyword = document.getElementById('search-input').value.toLowerCase();
+        const filtered = allPosts.filter(post => post.title.toLowerCase().includes(keyword));
+        currentPage = 1;
+        renderPosts(filtered);
     }
 
-    // Firebase Operations
-    async function uploadToFirebase() {
-        const statusDiv = document.getElementById('status');
-        const title = document.getElementById('title').value;
-        const image = document.getElementById('image').value;
-
-        if(!title || !image) { alert("Title and Poster URL are required!"); return; }
-
-        const data = {
-            title: title,
-            image: image,
-            downloadGuide: document.getElementById('downloadGuide').value || "#",
-            status: document.getElementById('statusSelect').value,
-            quality: document.getElementById('quality').value,
-            lang: document.getElementById('lang').value,
-            genre: document.getElementById('genre').value,
-            episodes: [],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-        };
-
+    async function loadSystemSettings() {
         try {
-            await db.collection('posts').add(data);
-            statusDiv.innerHTML = "Success: Content Published!";
-            statusDiv.className = "success-msg";
-            document.getElementById('title').value = '';
-            document.getElementById('image').value = '';
-            loadAllContent();
-            setTimeout(() => { statusDiv.innerHTML = ''; statusDiv.className = ''; }, 3000);
-        } catch (e) { alert("Error: " + e.message); }
+            const doc = await db.collection('systemConfig').doc('homePage').get();
+            if(doc.exists) {
+                const data = doc.data();
+                if(data.telegramLink) {
+                    document.getElementById('tg-alert-btn').href = data.telegramLink;
+                    document.getElementById('tg-banner-link').href = data.telegramLink;
+                }
+                if(data.telegramBanner) {
+                    document.getElementById('tg-banner-img').src = data.telegramBanner;
+                }
+            }
+        } catch (e) { console.error("System settings load error:", e); }
     }
 
-    async function loadAllContent() {
-        const container = document.getElementById('contentContainer');
-        const search = document.getElementById('searchBox').value.toLowerCase();
-        
+    async function loadData() {
+        const loader = document.getElementById('loading-state');
         try {
+            await loadSystemSettings();
             const snapshot = await db.collection('posts').orderBy('createdAt', 'desc').get();
-            container.innerHTML = '';
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                if(d.title.toLowerCase().includes(search)) {
-                    container.innerHTML += `
-                    <div class="content-card">
-                        <img src="${d.image}" class="content-poster" onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
-                        <div class="content-info">
-                            <strong>${d.title}</strong><br>
-                            <small style="color:var(--gray)">${d.status} | ${d.date}</small><br>
-                            <button class="btn-post" style="padding:8px; margin-top:10px; font-size:13px;" onclick="openEditModal('${doc.id}')">
-                                <i class="fas fa-edit"></i> Edit Everything
-                            </button>
-                        </div>
-                    </div>`;
-                }
-            });
-        } catch (e) { console.log(e); }
-    }
-
-    // Episode Management Logic
-    function triggerAddEp() {
-        const type = document.getElementById('newEpType').value;
-        const filterVal = document.getElementById('seasonFilter').value;
-        const defaultSeason = filterVal === 'all' ? '1' : filterVal;
-        addEpisodeRow('', '', '', '', '', '', type, defaultSeason);
-        updateSeasonFilterUI();
-        applySeasonFilter();
-    }
-
-    function addEpisodeRow(name = '', l480 = '', l720 = '', l1080 = '', l2k = '', l4k = '', type = 'multi', season = '1') {
-        const div = document.createElement('div');
-        div.className = 'episode-row';
-        div.dataset.type = type;
-        
-        let seasonOptions = '';
-        for(let i=1; i<=30; i++) {
-            seasonOptions += `<option value="${i}" ${season == i ? 'selected' : ''}>Season ${i}</option>`;
-        }
-        
-        let linkInputs = '';
-        if(type === 'multi') {
-            linkInputs = `
-                <div class="ep-link-grid">
-                    <input type="text" placeholder="480p Link" value="${l480}" class="ep-480">
-                    <input type="text" placeholder="720p Link" value="${l720}" class="ep-720">
-                    <input type="text" placeholder="1080p Link" value="${l1080}" class="ep-1080">
-                    <input type="text" placeholder="2K Link" value="${l2k}" class="ep-2k">
-                    <input type="text" placeholder="4K Link" value="${l4k}" class="ep-4k" style="grid-column: span 2;">
-                </div>`;
-        } else {
-            const val = l480 || l720 || l1080 || l2k || l4k;
-            linkInputs = `<div class="ep-link-grid"><input type="text" placeholder="${type.toUpperCase()} Link" value="${val}" class="ep-${type}" style="grid-column: span 2;"></div>`;
-        }
-
-        div.innerHTML = `
-            <button class="remove-btn" onclick="removeEpRow(this)">Remove</button>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div style="flex: 1;">
-                    <label>Season</label>
-                    <select class="ep-season" onchange="updateSeasonFilterUI(); applySeasonFilter();">${seasonOptions}</select>
-                </div>
-                <div style="flex: 2;">
-                    <label>Episode Name / Number</label>
-                    <input type="text" placeholder="e.g. Episode 01" value="${name}" class="ep-name">
-                </div>
-            </div>
-            ${linkInputs}
-        `;
-        document.getElementById('episodes-list').appendChild(div);
-    }
-
-    function updateSeasonFilterUI() {
-        const seasonSelects = document.querySelectorAll('.ep-season');
-        const filterDropdown = document.getElementById('seasonFilter');
-        const currentFilter = filterDropdown.value;
-        const seasons = new Set();
-        seasonSelects.forEach(s => seasons.add(s.value));
-        filterDropdown.innerHTML = '<option value="all">Show All Seasons</option>';
-        Array.from(seasons).sort((a,b) => a-b).forEach(s => {
-            filterDropdown.innerHTML += `<option value="${s}">Season ${s}</option>`;
-        });
-        filterDropdown.value = seasons.has(currentFilter) ? currentFilter : 'all';
-    }
-
-    function applySeasonFilter() {
-        const filterVal = document.getElementById('seasonFilter').value;
-        const rows = document.querySelectorAll('.episode-row');
-        rows.forEach(row => {
-            const rowSeason = row.querySelector('.ep-season').value;
-            row.style.display = (filterVal === 'all' || rowSeason === filterVal) ? 'block' : 'none';
-        });
-    }
-
-    function removeEpRow(btn) {
-        btn.parentElement.remove();
-        updateSeasonFilterUI();
-        applySeasonFilter();
-    }
-
-    async function openEditModal(id) {
-        const doc = await db.collection('posts').doc(id).get();
-        const d = doc.data();
-        document.getElementById('editId').value = id;
-        document.getElementById('editTitle').value = d.title || '';
-        document.getElementById('editImage').value = d.image || '';
-        document.getElementById('editDownloadGuide').value = d.downloadGuide || '';
-        document.getElementById('editStatusSelect').value = d.status || 'Ongoing';
-        document.getElementById('editQuality').value = d.quality || '';
-        document.getElementById('editLang').value = d.lang || '';
-        document.getElementById('editGenre').value = d.genre || '';
-        
-        const epList = document.getElementById('episodes-list');
-        epList.innerHTML = '';
-        
-        if(d.episodes) {
-            d.episodes.forEach(ep => {
-                let type = 'multi';
-                let linkCount = [ep.link480, ep.link720, ep.link1080, ep.link2k, ep.link4k].filter(x => x).length;
-                if(linkCount === 1) {
-                    if(ep.link4k) type = '4k';
-                    else if(ep.link1080) type = '1080p';
-                    else if(ep.link720) type = '720p';
-                    else if(ep.link480) type = '480p';
-                }
-                addEpisodeRow(ep.name, ep.link480||'', ep.link720||'', ep.link1080||'', ep.link2k||'', ep.link4k||'', type, ep.season || '1');
-            });
-        }
-        updateSeasonFilterUI();
-        applySeasonFilter();
-        document.getElementById('editModal').classList.add('active');
-    }
-
-    async function updateContent() {
-        const id = document.getElementById('editId').value;
-        const rows = document.querySelectorAll('.episode-row');
-        let episodesArray = [];
-
-        rows.forEach(row => {
-            const name = row.querySelector('.ep-name').value;
-            const season = row.querySelector('.ep-season').value;
-            if(name) {
-                const type = row.dataset.type;
-                let epObj = { name: name, season: season };
-                if(type === 'multi') {
-                    epObj.link480 = row.querySelector('.ep-480').value || "";
-                    epObj.link720 = row.querySelector('.ep-720').value || "";
-                    epObj.link1080 = row.querySelector('.ep-1080').value || "";
-                    epObj.link2k = row.querySelector('.ep-2k').value || "";
-                    epObj.link4k = row.querySelector('.ep-4k').value || "";
-                } else {
-                    const cleanType = type.replace('p', '');
-                    epObj['link' + cleanType] = row.querySelector('.ep-' + type).value || "";
-                }
-                episodesArray.push(epObj);
-            }
-        });
-
-        try {
-            await db.collection('posts').doc(id).update({
-                title: document.getElementById('editTitle').value,
-                image: document.getElementById('editImage').value,
-                downloadGuide: document.getElementById('editDownloadGuide').value,
-                status: document.getElementById('editStatusSelect').value,
-                quality: document.getElementById('editQuality').value,
-                lang: document.getElementById('editLang').value,
-                genre: document.getElementById('editGenre').value,
-                episodes: episodesArray
-            });
-            const estatus = document.getElementById('editStatus');
-            estatus.innerHTML = "Updated Successfully!";
-            estatus.className = "success-msg";
-            loadAllContent();
-            setTimeout(() => { closeEditModal(); estatus.innerHTML = ''; estatus.className = ''; }, 1500);
-        } catch (e) { alert("Error: " + e.message); }
-    }
-
-    function closeEditModal() { document.getElementById('editModal').classList.remove('active'); }
-
-    async function deleteContentConfirm() {
-        if(confirm("Permanently delete this post?")) {
-            await db.collection('posts').doc(document.getElementById('editId').value).delete();
-            closeEditModal();
-            loadAllContent();
-        }
-    }
-</script>
-</body>
-</html>
-                            <option>720p | HD</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>Languages</label><input type="text" id="lang" placeholder="Hindi, English"></div>
-                    <div class="form-group"><label>Genres</label><input type="text" id="genre" placeholder="Action, Adventure"></div>
-                </div>
-                <button class="btn-post" onclick="uploadToFirebase()">Publish Post</button>
-                <div id="status"></div>
-            </div>
-        </div>
-        
-        <div id="manage-content" class="content-section">
-            <div class="admin-card">
-                <input type="text" id="searchBox" placeholder="Search by title..." onkeyup="loadAllContent()">
-                <div id="contentContainer" class="content-list" style="margin-top:20px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="editModal">
-    <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>Edit Post & Episodes</h3>
-            <span style="cursor:pointer; font-size:28px;" onclick="closeEditModal()">&times;</span>
-        </div>
-        <hr>
-        <input type="hidden" id="editId">
-        <div class="form-grid">
-            <div class="form-group"><label>Title</label><input type="text" id="editTitle"></div>
-            <div class="form-group"><label>Status</label>
-                <select id="editStatusSelect">
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Finished">Finished</option>
-                </select>
-            </div>
-            <div class="form-group"><label>Poster URL</label><input type="text" id="editImage"></div>
-            <div class="form-group"><label>Guide Link</label><input type="text" id="editDownloadGuide"></div>
-            <div class="form-group"><label>Quality</label><input type="text" id="editQuality"></div>
-            <div class="form-group"><label>Languages</label><input type="text" id="editLang"></div>
-            <div class="form-group"><label>Genres</label><input type="text" id="editGenre"></div>
-        </div>
-
-        <h3 style="margin-top:25px;">Episode Links</h3>
-        <div style="margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 8px;">
-            <label style="margin:0;">Add New:</label>
-            <select id="newEpType" style="width: auto;">
-                <option value="multi">Full Multi (480p-4K)</option>
-                <option value="4k">4K Only</option>
-                <option value="1080p">1080p Only</option>
-                <option value="720p">720p Only</option>
-                <option value="480p">480p Only</option>
-            </select>
-            <button class="add-ep-btn" onclick="triggerAddEp()"><i class="fas fa-plus"></i> Add Episode</button>
-        </div>
-
-        <div class="filter-section">
-            <label style="margin:0; min-width:max-content;"><i class="fas fa-filter"></i> Filter by Season:</label>
-            <select id="seasonFilter" onchange="applySeasonFilter()">
-                <option value="all">Show All Seasons</option>
-            </select>
-        </div>
-        
-        <div id="episodes-list"></div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 0; background: white; padding: 10px 0;">
-            <button class="btn-post" style="flex: 2;" onclick="updateContent()">Update Everything</button>
-            <button class="btn-post" style="background: var(--danger); flex: 1;" onclick="deleteContentConfirm()">Delete Post</button>
-        </div>
-        <div id="editStatus"></div>
-    </div>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDpB4bszvFjBNC2WvhTSgFYf2Y0m_StVWM",
-        authDomain: "oonj-def3e.firebaseapp.com",
-        projectId: "oonj-def3e",
-        storageBucket: "oonj-def3e.firebasestorage.app",
-        messagingSenderId: "648217288200",
-        appId: "1:648217288200:web:09001453584950b567fbbd"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    function checkAuth() {
-        const pass = document.getElementById('adminPass').value;
-        if(pass === "admin123") {
-            document.getElementById('login-box').style.display = 'none';
-            document.getElementById('main-ui').style.display = 'block';
-            loadAllContent();
-        } else { 
-            alert("Access Denied! Incorrect Password."); 
-        }
-    }
-
-    function logout() { location.reload(); }
-
-    function switchTab(tabId, el) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
-    }
-
-    async function uploadToFirebase() {
-        const statusDiv = document.getElementById('status');
-        const title = document.getElementById('title').value;
-        const image = document.getElementById('image').value;
-
-        if(!title || !image) { alert("Title and Poster URL are required!"); return; }
-
-        const data = {
-            title: title,
-            image: image,
-            downloadGuide: document.getElementById('downloadGuide').value || "#",
-            status: document.getElementById('statusSelect').value,
-            quality: document.getElementById('quality').value,
-            lang: document.getElementById('lang').value,
-            genre: document.getElementById('genre').value,
-            episodes: [],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-        };
-
-        try {
-            await db.collection('posts').add(data);
-            statusDiv.innerHTML = "Success: Content Published!";
-            statusDiv.className = "success-msg";
-            document.getElementById('title').value = '';
-            document.getElementById('image').value = '';
-            loadAllContent();
-            setTimeout(() => { statusDiv.innerHTML = ''; statusDiv.className = ''; }, 3000);
-        } catch (e) { alert("Error: " + e.message); }
-    }
-
-    async function loadAllContent() {
-        const container = document.getElementById('contentContainer');
-        const search = document.getElementById('searchBox').value.toLowerCase();
-        
-        try {
-            const snapshot = await db.collection('posts').orderBy('createdAt', 'desc').get();
-            container.innerHTML = '';
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                if(d.title.toLowerCase().includes(search)) {
-                    container.innerHTML += `
-                    <div class="content-card">
-                        <img src="${d.image}" class="content-poster" onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
-                        <div class="content-info">
-                            <strong>${d.title}</strong><br>
-                            <small style="color:var(--gray)">${d.status} | ${d.date}</small><br>
-                            <button class="btn-post" style="padding:8px; margin-top:10px; font-size:13px;" onclick="openEditModal('${doc.id}')">
-                                <i class="fas fa-edit"></i> Edit Everything
-                            </button>
-                        </div>
-                    </div>`;
-                }
-            });
-        } catch (e) { console.log(e); }
-    }
-
-    function triggerAddEp() {
-        const type = document.getElementById('newEpType').value;
-        // Season filter er value jodi 'all' na hoy, tobe shei season e add hobe
-        const filterVal = document.getElementById('seasonFilter').value;
-        const defaultSeason = filterVal === 'all' ? '1' : filterVal;
-        addEpisodeRow('', '', '', '', '', '', type, defaultSeason);
-        updateSeasonFilterUI();
-        applySeasonFilter();
-    }
-
-    function addEpisodeRow(name = '', l480 = '', l720 = '', l1080 = '', l2k = '', l4k = '', type = 'multi', season = '1') {
-        const div = document.createElement('div');
-        div.className = 'episode-row';
-        div.dataset.type = type;
-        
-        let seasonOptions = '';
-        for(let i=1; i<=30; i++) {
-            seasonOptions += `<option value="${i}" ${season == i ? 'selected' : ''}>Season ${i}</option>`;
-        }
-        
-        let linkInputs = '';
-        if(type === 'multi') {
-            linkInputs = `
-                <div class="ep-link-grid">
-                    <input type="text" placeholder="480p Link" value="${l480}" class="ep-480">
-                    <input type="text" placeholder="720p Link" value="${l720}" class="ep-720">
-                    <input type="text" placeholder="1080p Link" value="${l1080}" class="ep-1080">
-                    <input type="text" placeholder="2K Link" value="${l2k}" class="ep-2k">
-                    <input type="text" placeholder="4K Link" value="${l4k}" class="ep-4k" style="grid-column: span 2;">
-                </div>`;
-        } else {
-            const val = l480 || l720 || l1080 || l2k || l4k;
-            linkInputs = `<div class="ep-link-grid"><input type="text" placeholder="${type.toUpperCase()} Link" value="${val}" class="ep-${type}" style="grid-column: span 2;"></div>`;
-        }
-
-        div.innerHTML = `
-            <button class="remove-btn" onclick="removeEpRow(this)">Remove</button>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div style="flex: 1;">
-                    <label>Season</label>
-                    <select class="ep-season" onchange="updateSeasonFilterUI(); applySeasonFilter();">${seasonOptions}</select>
-                </div>
-                <div style="flex: 2;">
-                    <label>Episode Name / Number</label>
-                    <input type="text" placeholder="e.g. Episode 01" value="${name}" class="ep-name">
-                </div>
-            </div>
-            ${linkInputs}
-        `;
-        document.getElementById('episodes-list').appendChild(div);
-    }
-
-    // Season wise Filtering Functions
-    function updateSeasonFilterUI() {
-        const seasonSelects = document.querySelectorAll('.ep-season');
-        const filterDropdown = document.getElementById('seasonFilter');
-        const currentFilter = filterDropdown.value;
-        
-        const seasons = new Set();
-        seasonSelects.forEach(s => seasons.add(s.value));
-        
-        // Clear except first
-        filterDropdown.innerHTML = '<option value="all">Show All Seasons</option>';
-        
-        // Sort and Add seasons
-        Array.from(seasons).sort((a,b) => a-b).forEach(s => {
-            filterDropdown.innerHTML += `<option value="${s}">Season ${s}</option>`;
-        });
-        
-        // Restore selection if exists
-        filterDropdown.value = seasons.has(currentFilter) ? currentFilter : 'all';
-    }
-
-    function applySeasonFilter() {
-        const filterVal = document.getElementById('seasonFilter').value;
-        const rows = document.querySelectorAll('.episode-row');
-        
-        rows.forEach(row => {
-            const rowSeason = row.querySelector('.ep-season').value;
-            if(filterVal === 'all' || rowSeason === filterVal) {
-                row.style.display = 'block';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
-    function removeEpRow(btn) {
-        btn.parentElement.remove();
-        updateSeasonFilterUI();
-        applySeasonFilter();
-    }
-
-    async function openEditModal(id) {
-        const doc = await db.collection('posts').doc(id).get();
-        const d = doc.data();
-        
-        document.getElementById('editId').value = id;
-        document.getElementById('editTitle').value = d.title || '';
-        document.getElementById('editImage').value = d.image || '';
-        document.getElementById('editDownloadGuide').value = d.downloadGuide || '';
-        document.getElementById('editStatusSelect').value = d.status || 'Ongoing';
-        document.getElementById('editQuality').value = d.quality || '';
-        document.getElementById('editLang').value = d.lang || '';
-        document.getElementById('editGenre').value = d.genre || '';
-        
-        const epList = document.getElementById('episodes-list');
-        epList.innerHTML = '';
-        
-        if(d.episodes && d.episodes.length > 0) {
-            d.episodes.forEach(ep => {
-                let type = 'multi';
-                let linkCount = [ep.link480, ep.link720, ep.link1080, ep.link2k, ep.link4k].filter(x => x).length;
-                if(linkCount === 1) {
-                    if(ep.link4k) type = '4k';
-                    else if(ep.link1080) type = '1080p';
-                    else if(ep.link720) type = '720p';
-                    else if(ep.link480) type = '480p';
-                }
-                addEpisodeRow(ep.name, ep.link480||'', ep.link720||'', ep.link1080||'', ep.link2k||'', ep.link4k||'', type, ep.season || '1');
-            });
-        }
-        
-        // Initialize Filter
-        updateSeasonFilterUI();
-        document.getElementById('seasonFilter').value = 'all';
-        applySeasonFilter();
-        
-        document.getElementById('editModal').classList.add('active');
-    }
-
-    async function updateContent() {
-        const id = document.getElementById('editId').value;
-        const rows = document.querySelectorAll('.episode-row');
-        let episodesArray = [];
-
-        rows.forEach(row => {
-            const name = row.querySelector('.ep-name').value;
-            const season = row.querySelector('.ep-season').value;
-            if(name) {
-                const type = row.dataset.type;
-                let epObj = { name: name, season: season };
-                if(type === 'multi') {
-                    epObj.link480 = row.querySelector('.ep-480').value || "";
-                    epObj.link720 = row.querySelector('.ep-720').value || "";
-                    epObj.link1080 = row.querySelector('.ep-1080').value || "";
-                    epObj.link2k = row.querySelector('.ep-2k').value || "";
-                    epObj.link4k = row.querySelector('.ep-4k').value || "";
-                } else {
-                    const cleanType = type.replace('p', '');
-                    epObj['link' + cleanType] = row.querySelector('.ep-' + type).value || "";
-                }
-                episodesArray.push(epObj);
-            }
-        });
-
-        try {
-            await db.collection('posts').doc(id).update({
-                title: document.getElementById('editTitle').value,
-                image: document.getElementById('editImage').value,
-                downloadGuide: document.getElementById('editDownloadGuide').value,
-                status: document.getElementById('editStatusSelect').value,
-                quality: document.getElementById('editQuality').value,
-                lang: document.getElementById('editLang').value,
-                genre: document.getElementById('editGenre').value,
-                episodes: episodesArray
-            });
+            loader.style.display = 'none';
+            allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderPosts(allPosts);
+            renderLatestList();
             
-            const estatus = document.getElementById('editStatus');
-            estatus.innerHTML = "Everything Updated Successfully!";
-            estatus.className = "success-msg";
-            loadAllContent();
-            setTimeout(() => { closeEditModal(); estatus.innerHTML = ''; estatus.className = ''; }, 1500);
-        } catch (e) { alert("Error: " + e.message); }
+            setTimeout(() => {
+                document.getElementById('tg-alert').classList.add('show');
+            }, 2000);
+
+        } catch (error) { loader.innerHTML = "Error loading content."; }
     }
 
-    function closeEditModal() { document.getElementById('editModal').classList.remove('active'); }
+    function closeTgAlert() {
+        document.getElementById('tg-alert').classList.remove('show');
+    }
 
-    async function deleteContentConfirm() {
-        if(confirm("Are you sure? This post will be permanently deleted!")) {
-            await db.collection('posts').doc(document.getElementById('editId').value).delete();
-            closeEditModal();
-            loadAllContent();
+    function renderPosts(posts) {
+        const feed = document.getElementById('post-feed');
+        const startIndex = (currentPage - 1) * postsPerPage;
+        const endIndex = startIndex + postsPerPage;
+        const paginatedPosts = posts.slice(startIndex, endIndex);
+
+        let html = '';
+        paginatedPosts.forEach(post => {
+            let newBadgeHtml = '';
+            if(post.createdAt) {
+                const postDate = post.createdAt.toDate();
+                const diffDays = Math.ceil(Math.abs(new Date() - postDate) / (1000 * 60 * 60 * 24));
+                if(diffDays <= 7) newBadgeHtml = `<span class="badge new-badge">NEW</span>`;
+            }
+            const statusClass = (post.status || 'Ongoing').toLowerCase();
+            html += `
+                <article class="post-card" onclick="openDetails('${post.id}')">
+                    <img src="${post.image}" class="post-thumb">
+                    <div class="post-content">
+                        <div class="badge-container">
+                            <span class="badge quality-badge">${post.quality}</span>
+                            ${newBadgeHtml}
+                            <span class="badge status-badge ${statusClass}">${post.status || 'Ongoing'}</span>
+                        </div>
+                        <h2 class="post-title">${post.title}</h2>
+                        <div class="post-meta">
+                            <span><i class="fas fa-calendar-alt"></i> ${post.date || 'New'}</span>
+                            <span><i class="fas fa-film"></i> ${post.genre || 'Action'}</span>
+                        </div>
+                    </div>
+                </article>
+            `;
+        });
+        feed.innerHTML = html || '<p style="text-align:center; padding:50px;">No results found.</p>';
+        renderPagination(posts.length);
+    }
+
+    function renderPagination(totalItems) {
+        const paginationContainer = document.getElementById('pagination');
+        const totalPages = Math.ceil(totalItems / postsPerPage);
+        
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let pgHtml = '';
+        pgHtml += `<button class="page-btn nav-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">< PREV</button>`;
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                pgHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            } else if (i === currentPage - 2 || i === currentPage + 2) {
+                pgHtml += `<span style="padding: 5px;">...</span>`;
+            }
+        }
+        pgHtml += `<button class="page-btn nav-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">NEXT ></button>`;
+        paginationContainer.innerHTML = pgHtml;
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        window.scrollTo(0, 0);
+        renderPosts(allPosts);
+    }
+
+    function renderLatestList() {
+        const latestDiv = document.getElementById('latest-list');
+        const latestPosts = allPosts.slice(0, 15);
+        
+        latestDiv.innerHTML = latestPosts.map(post => {
+            // Logic to get the latest episode info
+            let seasonText = "";
+            let episodeText = "";
+            if(post.episodes && post.episodes.length > 0) {
+                // Get the last episode added to the array
+                const lastEp = post.episodes[post.episodes.length - 1];
+                seasonText = ` Season ${lastEp.season || '1'},`;
+                episodeText = ` ${lastEp.name || 'New Episode'}`;
+            }
+            
+            const lang = post.lang || "Multi";
+            
+            // Format: Title + Season + Episode + [Language] + Added
+            return `<a href="javascript:void(0)" class="latest-item" onclick="openDetails('${post.id}')">
+                ${post.title}${seasonText}${episodeText} [${lang}] Added
+            </a>`;
+        }).join('');
+    }
+
+    async function openDetails(id) {
+        document.getElementById('home-page').style.display = 'none';
+        document.getElementById('post-details').style.display = 'block';
+        window.scrollTo(0,0);
+        
+        const epList = document.getElementById('ep-list-container');
+        const seasonTabs = document.getElementById('season-tabs');
+        epList.innerHTML = '<div style="text-align:center; padding:20px;">Fetching links...</div>';
+        seasonTabs.innerHTML = '';
+
+        const doc = await db.collection('posts').doc(id).get();
+        if(doc.exists) {
+            const data = doc.data();
+            document.getElementById('det-title').innerText = data.title;
+            document.getElementById('det-img').src = data.image;
+            document.getElementById('det-genre').innerText = data.genre || 'N/A';
+            document.getElementById('det-lang').innerText = data.lang || 'N/A';
+            document.getElementById('det-quality').innerText = data.quality || 'N/A';
+            document.getElementById('det-status').innerText = data.status || 'Ongoing';
+
+            const guideBtn = document.getElementById('guide-btn');
+            guideBtn.onclick = () => (data.downloadGuide && data.downloadGuide !== "#") ? window.open(data.downloadGuide, '_blank') : alert('Tutorial not available.');
+
+            document.getElementById('ongoing-msg').style.display = (data.status && data.status.toLowerCase() === 'finished') ? 'none' : 'block';
+
+            currentEpisodes = data.episodes || [];
+            
+            if(currentEpisodes.length > 0) {
+                let seasons = [...new Set(currentEpisodes.map(ep => ep.season || "1"))];
+                seasons.sort((a, b) => a - b);
+
+                seasons.forEach((s, index) => {
+                    const tab = document.createElement('div');
+                    tab.className = `season-tab ${index === 0 ? 'active' : ''}`;
+                    tab.innerText = `Season ${s}`;
+                    tab.onclick = () => {
+                        document.querySelectorAll('.season-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        renderEpisodes(s);
+                    };
+                    seasonTabs.appendChild(tab);
+                });
+                renderEpisodes(seasons[0]);
+            } else {
+                epList.innerHTML = '<p style="text-align:center; color:gray; padding:20px;">No episodes found.</p>';
+            }
+            showRandomRecommendations(id);
         }
     }
+
+    function renderEpisodes(seasonNum) {
+        const epList = document.getElementById('ep-list-container');
+        const filtered = currentEpisodes.filter(ep => (ep.season || "1") == seasonNum);
+        
+        let episodeHtml = '';
+        filtered.forEach((ep) => {
+            let btnHtml = '';
+            if(ep.link480) btnHtml += `<a href="${ep.link480}" class="dl-res-btn btn-480p" target="_blank">Download 480p</a>`;
+            if(ep.link720) btnHtml += `<a href="${ep.link720}" class="dl-res-btn btn-720p" target="_blank">Download 720p</a>`;
+            if(ep.link1080) btnHtml += `<a href="${ep.link1080}" class="dl-res-btn btn-1080p" target="_blank">Download 1080p</a>`;
+            if(ep.link2k) btnHtml += `<a href="${ep.link2k}" class="dl-res-btn btn-2k" target="_blank">Download 2K HD</a>`;
+            if(ep.link4k) btnHtml += `<a href="${ep.link4k}" class="dl-res-btn btn-4k" target="_blank">Download 4K Ultra HD</a>`;
+
+            episodeHtml += `
+                <div class="ep-accordion">
+                    <div class="ep-header" onclick="toggleAccordion(this)">
+                        <span>${ep.name}</span>
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="ep-content">
+                        <div class="res-container">
+                            ${btnHtml || '<p style="color:red">No links available</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        epList.innerHTML = episodeHtml;
+    }
+
+    function showRandomRecommendations(currentId) {
+        const recFeed = document.getElementById('recommended-feed');
+        const others = allPosts.filter(p => p.id !== currentId);
+        const shuffled = others.sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 5);
+
+        let html = '';
+        selected.forEach(post => {
+            const statusClass = (post.status || 'Ongoing').toLowerCase();
+            html += `
+                <article class="post-card" onclick="openDetails('${post.id}')" style="margin-bottom: 20px;">
+                    <img src="${post.image}" class="post-thumb">
+                    <div class="post-content" style="padding: 15px;">
+                        <div class="badge-container">
+                            <span class="badge quality-badge">${post.quality}</span>
+                            <span class="badge status-badge ${statusClass}">${post.status || 'Ongoing'}</span>
+                        </div>
+                        <h2 class="post-title" style="font-size: 16px;">${post.title}</h2>
+                    </div>
+                </article>
+            `;
+        });
+        recFeed.innerHTML = html || '<p style="text-align:center; color:gray;">No recommendations yet.</p>';
+    }
+
+    function toggleAccordion(el) {
+        const content = el.nextElementSibling;
+        const icon = el.querySelector('i');
+        const isActive = content.classList.contains('active');
+        document.querySelectorAll('.ep-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.ep-header i').forEach(i => i.classList.replace('fa-minus', 'fa-plus'));
+        if(!isActive) {
+            content.classList.add('active');
+            icon.classList.replace('fa-plus', 'fa-minus');
+        }
+    }
+
+    function showHome() {
+        document.getElementById('home-page').style.display = 'block';
+        document.getElementById('post-details').style.display = 'none';
+        currentPage = 1;
+        renderPosts(allPosts);
+    }
+
+    loadData();
 </script>
 </body>
 </html>
